@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Персональные ссылки</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Cormorant+SC:wght@500;600&family=Great+Vibes&display=swap">
+<style>
+:root{--bg:#EEEAE5;--paper:#F8F5F0;--ink:#3B382C;--soft:#6D6857;--olive:#3D4A2A;--olive-deep:#2D371C;--line:#CFC8BA;--burgundy:#6A1724}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Cormorant Garamond",Georgia,serif;font-size:18px;line-height:1.5;
+  padding:40px max(16px,env(safe-area-inset-left,0px)) 60px max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-family:"Great Vibes",cursive;font-weight:400;font-size:52px;color:var(--olive-deep);margin:0 0 6px;text-align:center}
+.sub{text-align:center;color:var(--soft);margin:0 auto 28px;max-width:34em}
+label{display:block;font-family:"Cormorant SC",serif;font-weight:500;letter-spacing:.08em;margin:18px 0 8px}
+input,textarea{width:100%;font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+textarea{min-height:170px;resize:vertical}
+.hint{font-size:15.5px;color:var(--soft);font-style:italic;margin:6px 0 0}
+.btn{border:0;border-radius:999px;background:var(--olive);color:#EDE5D2;font-family:"Cormorant SC",serif;font-weight:600;letter-spacing:.12em;
+  font-size:14px;padding:12px 22px;cursor:pointer}
+.btn:hover{background:var(--olive-deep)}
+.btn.ghost{background:transparent;color:var(--olive-deep);border:1px solid var(--olive)}
+.row-actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.list{display:grid;gap:10px;margin-top:8px}
+.item{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:6px;min-width:0}
+.item .g{font-family:"Great Vibes",cursive;font-size:28px;color:var(--burgundy);line-height:1.1}
+.item .u{font-family:ui-monospace,Menlo,monospace;font-size:13px;word-break:break-all;color:var(--soft)}
+.item .a{display:flex;gap:8px;flex-wrap:wrap}
+.item .a .btn{padding:8px 14px;font-size:12px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--olive-deep);color:#EDE5D2;padding:10px 18px;border-radius:999px;
+  font-family:"Cormorant SC",serif;letter-spacing:.1em;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Персональные ссылки</h1>
+  <p class="sub">Напишите обращения к гостям, по одному в строке. Для каждого появится своя ссылка: гость увидит на сайте своё обращение вместо "Дорогие гости!", а в таблице с ответами будет видно, по какой ссылке пришла анкета.</p>
+
+  <label for="base">Адрес сайта</label>
+  <input id="base" value="https://baturinigor.github.io/wedding/">
+
+  <label for="names">Обращения</label>
+  <textarea id="names" placeholder="Дорогие Анна и Сергей!&#10;Дорогая бабушка!&#10;Дорогой Дима!"></textarea>
+  <p class="hint">Обращение показывается на сайте как есть, так что пишите его целиком, с "Дорогой" или "Дорогие" и восклицательным знаком.</p>
+
+  <div class="row-actions">
+    <button class="btn" id="make" type="button">Сделать ссылки</button>
+    <button class="btn ghost" id="copy-all" type="button" hidden>Скопировать всё для таблицы</button>
+  </div>
+  <div class="list" id="list"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite">Скопировано</div>
+<script>
+(function(){
+  function b64url(str){
+    var bytes = new TextEncoder().encode(str), bin = '';
+    for (var i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  var list = document.getElementById('list'), rows = [];
+  var toast = document.getElementById('toast');
+  function flash(msg){ toast.textContent = msg || 'Скопировано'; toast.classList.add('on'); setTimeout(function(){ toast.classList.remove('on'); }, 1400); }
+  function copy(text){
+    return navigator.clipboard.writeText(text).then(function(){ flash(); }, function(){ window.prompt('Скопируйте ссылку:', text); });
+  }
+  try { var saved = localStorage.getItem('wedding-links'); if (saved) document.getElementById('names').value = saved; } catch(e) {}
+  document.getElementById('make').addEventListener('click', function(){
+    var base = document.getElementById('base').value.trim();
+    var names = document.getElementById('names').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+    try { localStorage.setItem('wedding-links', names.join('\n')); } catch(e) {}
+    list.innerHTML = ''; rows = [];
+    names.forEach(function(n){
+      var url = base + (base.indexOf('?') >= 0 ? '&' : '?') + 'g=' + b64url(n);
+      rows.push([n, url]);
+      var item = document.createElement('div'); item.className = 'item';
+      var g = document.createElement('div'); g.className = 'g'; g.textContent = n;
+      var u = document.createElement('div'); u.className = 'u'; u.textContent = url;
+      var a = document.createElement('div'); a.className = 'a';
+      var c = document.createElement('button'); c.className = 'btn'; c.type = 'button'; c.textContent = 'Скопировать';
+      c.addEventListener('click', function(){ copy(url); });
+      var o = document.createElement('a'); o.className = 'btn ghost'; o.href = url; o.target = '_blank'; o.rel = 'noopener'; o.textContent = 'Открыть';
+      o.style.textDecoration = 'none';
+      a.append(c, o); item.append(g, u, a); list.append(item);
+    });
+    document.getElementById('copy-all').hidden = rows.length === 0;
+  });
+  document.getElementById('copy-all').addEventListener('click', function(){
+    copy(rows.map(function(r){ return r[0] + '\t' + r[1]; }).join('\n'));
+  });
+})();
+</script>
+</body>
+</html>
