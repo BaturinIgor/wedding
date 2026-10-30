@@ -194,6 +194,7 @@ html:not([lang="en"]) .t-en,html[lang="en"] .t-ru{visibility:hidden}
 .contacts{display:grid;gap:14px;margin:22px auto 0;max-width:360px}
 .contact{border:1px solid rgba(237,229,210,.35);border-radius:14px;padding:14px 16px}
 .contact .who{font-family:var(--caps);letter-spacing:0.072em;font-size:24px;opacity:.85;display:block;margin-bottom:6px}
+.contact .role{display:block;font-style:italic;font-size:16px;opacity:.75;margin:-6px 0 6px}
 .contact a{text-decoration:none;border-bottom:1px solid rgba(237,229,210,.35)}
 .contact a:hover{border-bottom-color:var(--cream)}
 .contact .row{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 16px;font-size:18px}
@@ -432,8 +433,10 @@ body.unsealing{transition:background-color .95s ease .3s}   /* strip colour fade
   <footer class="footer">
     <img class="swans" src="assets/swans.png" alt="">
     <p class="script" data-i18n="withLove">С любовью!</p>
-    <p data-i18n="questions">Если остались вопросы, пишите или звоните нам:</p>
+    <p data-i18n="questions">Если остались вопросы, пишите или звоните нашему организатору или нам:</p>
     <div class="contacts">
+      <div class="contact"><span class="who" data-i18n="planner">Анастасия</span><span class="role" data-i18n="plannerRole">организатор</span>
+        <div class="row"><a href="tel:+79052341038">+7 905 234-10-38</a><a href="https://t.me/anastasia_za_ruki" target="_blank" rel="noopener">@anastasia_za_ruki</a></div></div>
       <div class="contact"><span class="who" data-i18n="groom">Игорь</span>
         <div class="row"><a href="tel:+79500119638">+7 950 011-96-38</a><a href="https://t.me/ybaturin" target="_blank" rel="noopener">@ybaturin</a></div></div>
       <div class="contact"><span class="who" data-i18n="bride">Мария</span>
@@ -545,7 +548,7 @@ body.unsealing{transition:background-color .95s ease .3s}   /* strip colour fade
       dressTitle:'Dress code', dressText:'We would love it if you chose light, festive shades from our palette, not too dark. It is a wish, not a strict rule.',
       c1:'powder', c2:'olive', c3:'cappuccino', c4:'dusty blue', c5:'peach', c6:'lavender', c7:'sea green', c8:'sky blue', c9:'mint', c10:'lime green', c11:'butter yellow', c12:'coral', dressAvoid:'The one thing we ask: please avoid white and ivory', dressMen:'For men, a black suit is fine too',
       flowersTitle:'Instead of flowers', flowersText:'We know flowers are a wedding tradition, but sadly we will not have time to enjoy them. Instead of bouquets, we would be delighted with a small contribution to our honeymoon.',
-      lookForward:'We look forward to celebrating together!', withLove:'With love!', questions:'Questions? Call or message us:',
+      lookForward:'We look forward to celebrating together!', withLove:'With love!', questions:'Questions? Call or message our wedding planner or us:', planner:'Anastasia', plannerRole:'wedding planner',
       rsvpTitle:'RSVP', perGuest:'*please fill in a separate form for each guest', rsvpIntro:'We would love for you to be part of our celebration. Please reply by 16 January 2027.',
       fName:'Your full name', fNameHint:'Please include your surname, as some of our guests share first names.',
       fAttend:'Will you be attending our wedding?', yes:'Joyfully accepts', no:'Regretfully declines',
