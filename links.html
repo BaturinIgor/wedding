@@ -26,6 +26,9 @@ textarea{min-height:170px;resize:vertical}
 .list{display:grid;gap:10px;margin-top:8px}
 .item{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:6px;min-width:0}
 .item .g{font-family:"Great Vibes",cursive;font-size:28px;color:var(--burgundy);line-height:1.1}
+.item .en{display:flex;align-items:center;gap:8px}
+.item .en span{font-family:"Cormorant SC",serif;font-size:13px;letter-spacing:.08em;color:var(--soft);flex:none}
+.item .en input{padding:6px 10px;font-size:16px}
 .item .u{font-family:ui-monospace,Menlo,monospace;font-size:13px;word-break:break-all;color:var(--soft)}
 .item .a{display:flex;gap:8px;flex-wrap:wrap}
 .item .a .btn{padding:8px 14px;font-size:12px}
@@ -37,7 +40,7 @@ textarea{min-height:170px;resize:vertical}
 <body>
 <div class="wrap">
   <h1>Персональные ссылки</h1>
-  <p class="sub">Напишите обращения к гостям, по одному в строке. Для каждого появится своя ссылка: гость увидит на сайте своё обращение вместо "Дорогие гости!", а в таблице с ответами будет видно, по какой ссылке пришла анкета.</p>
+  <p class="sub">Напишите обращения к гостям, по одному в строке. Для каждого появится своя ссылка: гость увидит на сайте своё обращение вместо "Дорогие гости!", а в таблице с ответами будет видно, по какой ссылке пришла анкета. Английский вариант обращения для версии сайта на английском появится сам, его можно поправить.</p>
 
   <label for="base">Адрес сайта</label>
   <input id="base" value="https://baturinigor.github.io/wedding/">
@@ -54,6 +57,66 @@ textarea{min-height:170px;resize:vertical}
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite">Скопировано</div>
 <script>
+// Russian personal greeting -> English ("Дорогие Елена и Игорь!" -> "Dear Elena and Igor!").
+// Shared by the invitation page (inlined by build.py) and links.html. Keep it dependency-free.
+function greetToEn(s) {
+  if (!s || !/[А-Яа-яЁё]/.test(s)) return s;            // already Latin: leave as written
+  var NAMES = {
+    'александр':'Alexander','александра':'Alexandra','алексей':'Alexey','алёна':'Alyona','алена':'Alyona',
+    'анастасия':'Anastasia','евгений':'Evgeny','евгения':'Evgenia','екатерина':'Ekaterina','елена':'Elena',
+    'елизавета':'Elizaveta','ксения':'Ksenia','наталья':'Natalia','наталия':'Natalia','татьяна':'Tatiana',
+    'юлия':'Yulia','юля':'Yulia','дарья':'Daria','мария':'Maria','софья':'Sofia','софия':'Sofia',
+    'виктория':'Victoria','валерия':'Valeria','кристина':'Kristina','максим':'Maxim','михаил':'Mikhail',
+    'дмитрий':'Dmitry','юрий':'Yury','георгий':'Georgy','григорий':'Grigory','игорь':'Igor','илья':'Ilya',
+    'фёдор':'Fyodor','федор':'Fyodor','артём':'Artyom','артем':'Artyom','пётр':'Pyotr','петр':'Pyotr',
+    'семён':'Semyon','семен':'Semyon','лёша':'Lyosha','леша':'Lyosha','алёша':'Alyosha','алеша':'Alyosha'
+  };
+  var WORDS = {
+    'дорогой':'Dear','дорогая':'Dear','дорогие':'Dear','милый':'Dear','милая':'Dear','милые':'Dear',
+    'любимый':'Dear','любимая':'Dear','любимые':'Dear','уважаемый':'Dear','уважаемая':'Dear','уважаемые':'Dear',
+    'и':'and','бабушка':'Grandma','бабуля':'Granny','дедушка':'Grandpa','дедуля':'Grandpa','мама':'Mom',
+    'мамочка':'Mom','папа':'Dad','папочка':'Dad','тётя':'Aunt','тетя':'Aunt','дядя':'Uncle','сестра':'sister',
+    'сестрёнка':'sis','сестренка':'sis','брат':'brother','братик':'brother','крёстная':'Godmother',
+    'крестная':'Godmother','крёстный':'Godfather','крестный':'Godfather','друзья':'friends','друг':'friend',
+    'подруга':'friend','подружка':'friend','коллеги':'colleagues','соседи':'neighbours','родные':'family',
+    'родители':'parents','гости':'guests','ребята':'friends','семья':'family','наши':'our','наша':'our','наш':'our'
+  };
+  var TR = {'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','й':'y','к':'k',
+    'л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch',
+    'ш':'sh','щ':'shch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'};
+  function translit(w) {
+    var low = w.toLowerCase(), out = '';
+    low = low.replace(/ий$/, 'y').replace(/ия$/, 'ia').replace(/ья$/, 'ya');
+    for (var i = 0; i < low.length; i++) {
+      var c = low[i];
+      out += TR.hasOwnProperty(c) ? TR[c] : c;
+    }
+    return out;
+  }
+  function cap(src, en) {                                 // keep the source word's capitalisation
+    if (!en) return en;
+    if (src.length > 1 && src === src.toUpperCase() && src !== src.toLowerCase()) return en.toUpperCase();
+    if (src[0] !== src[0].toLowerCase()) return en[0].toUpperCase() + en.slice(1);
+    return en;
+  }
+  // "семья Ивановых" -> "Ivanov family"
+  s = s.replace(/сем(ья|ье|ью)\s+([А-ЯЁ][а-яё]+?)(ых|их)(?=[^а-яё]|$)/gi, function(m, a, stem) {
+    return '\u0001' + cap(stem, translit(stem)) + ' family';
+  });
+  var out = s.replace(/[А-Яа-яЁё]+(?:-[А-Яа-яЁё]+)*/g, function(w) {
+    var low = w.toLowerCase();
+    if (NAMES.hasOwnProperty(low)) return NAMES[low];
+    if (WORDS.hasOwnProperty(low)) {
+      var en = WORDS[low];
+      return /^[A-Z]/.test(en) ? en : cap(w, en);
+    }
+    return cap(w, translit(w));
+  });
+  out = out.replace(/\u0001/g, '');
+  out = out.replace(/\b(Dear)\s+(Dear\s+)+/g, '$1 ');        // "Дорогие и любимые" -> one "Dear"
+  out = out.replace(/^(\s*)(\S)/, function(m, sp, c) { return sp + c.toUpperCase(); });
+  return out;
+}
 (function(){
   function b64url(str){
     var bytes = new TextEncoder().encode(str), bin = '';
@@ -61,6 +124,14 @@ textarea{min-height:170px;resize:vertical}
     return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   }
   var list = document.getElementById('list'), rows = [];
+  var EN = {};
+  try { EN = JSON.parse(localStorage.getItem('wedding-links-en') || '{}') || {}; } catch(e) { EN = {}; }
+  function saveEn(){ try { localStorage.setItem('wedding-links-en', JSON.stringify(EN)); } catch(e) {} }
+  function makeUrl(base, n, en){
+    var url = base + (base.indexOf('?') >= 0 ? '&' : '?') + 'g=' + b64url(n);
+    if (en && en !== greetToEn(n)) url += '&e=' + b64url(en);
+    return url;
+  }
   var toast = document.getElementById('toast');
   function flash(msg){ toast.textContent = msg || 'Скопировано'; toast.classList.add('on'); setTimeout(function(){ toast.classList.remove('on'); }, 1400); }
   function copy(text){
@@ -73,22 +144,33 @@ textarea{min-height:170px;resize:vertical}
     try { localStorage.setItem('wedding-links', names.join('\n')); } catch(e) {}
     list.innerHTML = ''; rows = [];
     names.forEach(function(n){
-      var url = base + (base.indexOf('?') >= 0 ? '&' : '?') + 'g=' + b64url(n);
-      rows.push([n, url]);
+      var en = EN[n] || greetToEn(n);
+      var url = makeUrl(base, n, en);
+      var row = [n, en, url]; rows.push(row);
       var item = document.createElement('div'); item.className = 'item';
       var g = document.createElement('div'); g.className = 'g'; g.textContent = n;
+      var ew = document.createElement('label'); ew.className = 'en';
+      var es = document.createElement('span'); es.textContent = 'English';
+      var ei = document.createElement('input'); ei.value = en;
+      ew.append(es, ei);
       var u = document.createElement('div'); u.className = 'u'; u.textContent = url;
+      ei.addEventListener('input', function(){
+        var v = ei.value.trim();
+        if (v && v !== greetToEn(n)) EN[n] = v; else delete EN[n];
+        saveEn();
+        row[1] = v || greetToEn(n); url = makeUrl(base, n, row[1]); row[2] = url; u.textContent = url; o.href = url;
+      });
       var a = document.createElement('div'); a.className = 'a';
       var c = document.createElement('button'); c.className = 'btn'; c.type = 'button'; c.textContent = 'Скопировать';
       c.addEventListener('click', function(){ copy(url); });
       var o = document.createElement('a'); o.className = 'btn ghost'; o.href = url; o.target = '_blank'; o.rel = 'noopener'; o.textContent = 'Открыть';
       o.style.textDecoration = 'none';
-      a.append(c, o); item.append(g, u, a); list.append(item);
+      a.append(c, o); item.append(g, ew, u, a); list.append(item);
     });
     document.getElementById('copy-all').hidden = rows.length === 0;
   });
   document.getElementById('copy-all').addEventListener('click', function(){
-    copy(rows.map(function(r){ return r[0] + '\t' + r[1]; }).join('\n'));
+    copy(rows.map(function(r){ return r[0] + '\t' + r[1] + '\t' + r[2]; }).join('\n'));
   });
 })();
 </script>
